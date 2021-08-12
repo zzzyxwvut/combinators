@@ -1,6 +1,6 @@
 #!/bin/sh -e
 #
-# Shell dependencies (packaging): mkdir (of coreutils); find (of findutils).
+# Shell dependencies (packaging): cp, mkdir (of coreutils); find (of findutils).
 #
 # Compile, test, and package "org.function" classes.
 
@@ -33,10 +33,16 @@ java -cp ${bin}/ -XX:+UnlockExperimentalVMOptions -XX:+UseEpsilonGC \
 
 test $((${agenda} & 4)) -ne 0 || exit 0
 echo >&2 "PACKAGING..."
+test -x "`command -v cp`" || exit 16
 test -x "`command -v find`" || exit 16
 test -x "`command -v mkdir`" || exit 16
-test -d tmp || mkdir tmp
-cd ${bin}/
-jar -cfv ../tmp/combinators.jar \
+tmp=tmp
+meta_inf=META-INF
+test -d ${tmp} || mkdir ${tmp}
+test -d ${bin}/${meta_inf} || mkdir -p ${bin}/${meta_inf}
+cp -p -t ${bin}/${meta_inf}/ ../LICENSE
+cd ${bin}
+jar -cfv ../${tmp}/combinators.jar \
+	${meta_inf}/LICENSE \
 	`find org/function -iname \*.class \
 		\! \( -iname \*Tests.class -o -iname \*Tester.class \) -type f`
